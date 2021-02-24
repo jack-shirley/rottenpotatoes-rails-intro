@@ -6,9 +6,66 @@ class MoviesController < ApplicationController
     # will render app/views/movies/show.<extension> by default
   end
 
+
+
+
   def index
     @movies = Movie.all
+    @all_ratings = @movies.pluck(:rating).uniq.sort
+    @hilite_title = false
+    @hilite_release_date = false
+    
+    if !params[:ratings].nil? || !session[:ratings].nil?
+      @ratings_to_show = params[:ratings] || session[:ratings]
+    end
+    
+    if !params[:sorted].nil? || !session[:sorted].nil?
+      @sorted_by = params[:sorted] || session[:sorted]
+    end
+    
+    
+    if @ratings_to_show.nil?
+      @ratings_to_show = []
+      @movies = Movie.all
+    else
+      temp = []
+      if @ratings_to_show.kind_of?(Array)
+        temp = @ratings_to_show
+      else
+        temp = @ratings_to_show.keys
+      end
+      @movies = Movie.where(rating: temp )
+    end
+    
+    
+    if !(@sorted_by.nil?)
+      if !(@ratings_to_show.nil? || @ratings_to_show.empty?)
+        temp = []
+        if @ratings_to_show.kind_of?(Array)
+          temp = @ratings_to_show
+        else
+          temp = @ratings_to_show.keys
+        end
+        @movies = Movie.where(rating: temp )
+        session[:ratings] = params[:ratings]
+      else
+        @movies = Movie.all
+      end
+      
+      @movies = @movies.order(@sorted_by)
+      
+      if @sorted_by == "title"
+        @hilite_title = true
+      elsif @sorted_by == "release_date"
+        @hilite_release_date = true
+      end
+      session[:sorted] = params[:sorted]
+    end
+      
   end
+
+
+
 
   def new
     # default: render 'new' template
@@ -37,6 +94,8 @@ class MoviesController < ApplicationController
     flash[:notice] = "Movie '#{@movie.title}' deleted."
     redirect_to movies_path
   end
+  
+  
 
   private
   # Making "internal" methods private is not required, but is a common practice.
