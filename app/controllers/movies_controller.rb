@@ -6,9 +6,6 @@ class MoviesController < ApplicationController
     # will render app/views/movies/show.<extension> by default
   end
 
-
-
-
   def index
     @movies = Movie.all
     @all_ratings = @movies.pluck(:rating).uniq.sort
@@ -63,9 +60,7 @@ class MoviesController < ApplicationController
     end
       
   end
-
-
-
+  
 
   def new
     # default: render 'new' template
